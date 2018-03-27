@@ -1,0 +1,11 @@
+[UserKeys]
+  [UserKeys.111]
+    Username = "111"
+    ApiKey = "111"
+    Channel = "111"
+    MasterChannel = "111"
+  [UserKeys.222]
+    Username = "222"
+    ApiKey = "222"
+    Channel = "222"
+    MasterChannel = "222"

@@ -1,0 +1,13 @@
+<seelog>
+    <outputs formatid="main">
+        <filter levels="trace">
+            <buffered size="4096" flushperiod="1000">
+                <rollingfile type="size" filename="./log/roll.log" maxsize="102400" maxrolls="5" />
+            </buffered>
+        </filter>
+        <console />
+    </outputs>
+    <formats>
+        <format id="main" format="%l %Date %Time %File:%Line %Msg%n"/>
+    </formats>
+</seelog>
