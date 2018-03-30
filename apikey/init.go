@@ -3,6 +3,8 @@ package apikey
 import (
 	"github.com/BurntSushi/toml"
 	"os"
+	"errors"
+	"fmt"
 )
 
 type ApiKey struct {
@@ -58,4 +60,34 @@ func Init() {
 func CheckApiKey(apiKey string) bool {
 	_, ok := apiKeyCfg[apiKey]
 	return ok
+}
+
+func CheckChannel(apiKey, channel string) error {
+	// channel是否存在
+	_, ok := channelCfg.Channels[channel]
+	if !ok {
+		fmt.Println(apiKey, channel, channelCfg.Channels)
+		return errors.New("invalid channel")
+	}
+
+	// apiKey是否有权限　
+	apiKeyInfo, ok := apiKeyCfg[apiKey]
+	if !ok {
+		return errors.New("invalid apiKey")
+	}
+
+	if apiKeyInfo.Channel == channel {
+		return nil
+	}
+
+	return errors.New("no permission")
+}
+
+func MasterChannel(channel string) (string, error) {
+	info, ok := channelCfg.Channels[channel]
+	if !ok {
+		return "", errors.New("invalid channel")
+	}
+
+	return info.MasterChannel, nil
 }

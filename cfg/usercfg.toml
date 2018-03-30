@@ -1,11 +1,10 @@
 [UserKeys]
-  [UserKeys.111]
-    Username = "111"
-    ApiKey = "111"
-    Channel = "111"
-    MasterChannel = "111"
-  [UserKeys.222]
-    Username = "222"
-    ApiKey = "222"
-    Channel = "222"
-    MasterChannel = "222"
+  [UserKeys.user111]
+    Username = "user111"
+    ApiKey = "key111"
+    Channel = "my_channel"
+
+  [UserKeys.user222]
+    Username = "user222"
+    ApiKey = "key222"
+    Channel = "channel_222"

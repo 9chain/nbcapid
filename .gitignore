@@ -4,3 +4,4 @@ glide.lock
 userconfig
 config.toml
 test.db
+log

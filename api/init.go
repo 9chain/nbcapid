@@ -1,14 +1,8 @@
 package api
 
 import (
-	"errors"
-	"fmt"
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
-	"log"
-	"sync"
-	"time"
 	"github.com/9chain/nbcapid/apikey"
 )
 
@@ -18,9 +12,9 @@ type JSON2Response = primitives.JSON2Response
 
 var (
 	handlers    = make(map[string]func(ctx *gin.Context, params interface{}) (interface{}, *JSONError))
-	notifyChans = userNotify{channels: make(map[string]chan interface{}), rwLock: sync.RWMutex{}}
+	//notifyChans = userNotify{channels: make(map[string]chan interface{}), rwLock: sync.RWMutex{}}
 )
-
+/*
 type userNotify struct {
 	channels map[string]chan interface{}
 	rwLock   sync.RWMutex
@@ -68,7 +62,7 @@ func (n *userNotify) close(username string) {
 	delete(channels, username)
 	close(ch)
 }
-
+*/
 func Init(r *gin.RouterGroup) {
 	// 标准json2rpc处理
 	r.POST("v1", func(ctx *gin.Context) {
@@ -87,14 +81,14 @@ func Init(r *gin.RouterGroup) {
 		ctx.JSON(200, jsonResp)
 	})
 
-	r.GET("v1/notify", handleNotify)
+	//r.GET("v1/notify", handleNotify)
 
-	go func() { // TODO
-		for {
-			time.Sleep(time.Second * 5)
-			notifyChans.Notify("kitty", time.Now())
-		}
-	}()
+	//go func() { // TODO
+	//	for {
+	//		time.Sleep(time.Second * 5)
+	//		notifyChans.Notify("kitty", time.Now())
+	//	}
+	//}()
 }
 
 func checkApiKey(ctx *gin.Context) bool {
@@ -103,7 +97,12 @@ func checkApiKey(ctx *gin.Context) bool {
 		return false
 	}
 
-	return apikey.CheckApiKey(k)
+	if apikey.CheckApiKey(k) {
+		ctx.Set("apiKey", k)
+		return true
+	}
+
+	return false
 }
 
 func handleV1Request(ctx *gin.Context, j *JSON2Request) (*JSON2Response, *JSONError) {
@@ -132,12 +131,13 @@ func handleV1Request(ctx *gin.Context, j *JSON2Request) (*JSON2Response, *JSONEr
 	return jsonResp, nil
 }
 
+/*
 func handleNotify(ctx *gin.Context) {
-	if !checkApiKey(ctx) {
-		ctx.AbortWithError(400, errors.New("invalid username/apikey"))
-		return
-	}
-
+	//if !checkApiKey(ctx) {
+	//	ctx.AbortWithError(400, errors.New("invalid username/apikey"))
+	//	return
+	//}
+	_ = errors.New("1")
 	var upgrader = websocket.Upgrader{} // use default options
 
 	c, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
@@ -169,3 +169,4 @@ func handleNotify(ctx *gin.Context) {
 		}
 	}
 }
+*/
