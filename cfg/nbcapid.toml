@@ -1,6 +1,7 @@
 [SDKClient]
-WSUrl = "ws://localhost:8080/v1/ws"
-ApiKey = "test api key 000"
+WSUrl = "ws://192.168.100.125:8082/v1/ws"
+ApiKey = "1234567890"
 RetryConnectSecond = 3
 [Source]
-MaxQueueCount = 1000000
+MaxQueueCount = 1000
+MaxRecordsPerTx = 100

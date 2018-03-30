@@ -91,6 +91,7 @@ func start() {
 			fmt.Println("read error:", err)
 			return
 		}
+		fmt.Println(678, string(message))
 
 		wsEmitter.Emit("message", message)
 	}

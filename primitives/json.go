@@ -52,6 +52,19 @@ func ParseJSON2Request(request []byte) (*JSON2Request, error) {
 	return j, nil
 }
 
+
+func ParseJSON2Response(response []byte) (*JSON2Response, error) {
+	r := new(JSON2Response)
+	err := json.Unmarshal([]byte(response), r)
+	if err != nil {
+		return nil, err
+	}
+	if r.JSONRPC != "2.0" {
+		return nil, fmt.Errorf("Invalid JSON RPC version - `%v`, should be `2.0`", r.JSONRPC)
+	}
+	return r, nil
+}
+
 type JSON2Response struct {
 	JSONRPC string      `json:"jsonrpc"`
 	ID      interface{} `json:"id"`

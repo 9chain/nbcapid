@@ -5,3 +5,4 @@ userconfig
 config.toml
 test.db
 log
+test/.idea/

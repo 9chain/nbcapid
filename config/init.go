@@ -18,6 +18,7 @@ type Config struct {
 	}
 	Source struct {
 		MaxQueueCount int
+		MaxRecordsPerTx int
 	}
 }
 
@@ -35,7 +36,8 @@ WSUrl = "ws://localhost:8080/v1/ws"
 ApiKey = "test api key"
 RetryConnectSecond = 3
 [Source]
-MaxQueueCount = 1000000
+MaxQueueCount = 1000
+MaxRecordsPerTx = 100
 `
 
 func printCfg(flag string, cfg *Config) {
