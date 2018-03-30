@@ -3,8 +3,8 @@ package api
 import (
 	"github.com/9chain/nbcapid/apikey"
 	"github.com/9chain/nbcapid/primitives"
-	"github.com/gin-gonic/gin"
 	log "github.com/cihub/seelog"
+	"github.com/gin-gonic/gin"
 )
 
 type JSONError = primitives.JSONError
@@ -75,4 +75,3 @@ func handleV1Request(ctx *gin.Context, j *JSON2Request) (*JSON2Response, *JSONEr
 
 	return jsonResp, nil
 }
-

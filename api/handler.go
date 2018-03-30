@@ -6,8 +6,8 @@ import (
 	"github.com/9chain/nbcapid/apikey"
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/9chain/nbcapid/source"
-	"github.com/gin-gonic/gin"
 	log "github.com/cihub/seelog"
+	"github.com/gin-gonic/gin"
 )
 
 func init() {
@@ -15,7 +15,7 @@ func init() {
 	handlers["source-insert-batch"] = sourceInsertBatch
 	handlers["source-state"] = sourceState
 	handlers["source-transactions"] = sourceTransactions
-	}
+}
 
 /*
 {
@@ -42,8 +42,9 @@ func init() {
 */
 func sourceInsertBatch(ctx *gin.Context, params interface{}) (interface{}, *JSONError) {
 	var p source.SourceBatchRecord
+	log.Trace(params)
 	if err := MapToObject(params, &p); err != nil {
-		log.Warnf("invalid param %+v", params)
+		log.Warnf("invalid param %s", err.Error())
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
 

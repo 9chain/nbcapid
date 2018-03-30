@@ -107,8 +107,8 @@ def sdk_state():
 # my_channel_d961824324fb98f7b1b2b8e7278d960f3
 if __name__ == "__main__":
     try:
-        # create()
-        # query_transactions()
+        create()
+        query_transactions()
         query_state()
 
         # sdk_create()

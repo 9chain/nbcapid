@@ -27,6 +27,7 @@ func MapToObject(source interface{}, dst interface{}) error {
 	if err != nil {
 		return err
 	}
+	//fmt.Println(string(b))
 	return json.Unmarshal(b, dst)
 }
 

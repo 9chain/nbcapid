@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/9chain/nbcapid/apikey"
+	"github.com/9chain/nbcapid/common"
 	"github.com/9chain/nbcapid/config"
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/9chain/nbcapid/sdkclient"
-	"github.com/9chain/nbcapid/common"
 	log "github.com/cihub/seelog"
 	"sync"
 	"time"
@@ -38,8 +38,7 @@ func EnqueueBatch(batch *SourceBatchRecord) bool {
 		// map channel & key
 		realChannel, _ := apikey.MasterChannel(batch.Channel)
 		for i, _ := range records {
-			t := append([]byte(userChannel), byte('_'))
-			records[i].Key = append(t, records[i].Key...)
+			records[i].Key = fmt.Sprintf("%s_%s", userChannel, records[i].Key)
 		}
 
 		jsid, txid := nextJsID(), nextTxID()

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"os"
 	log "github.com/cihub/seelog"
+	"os"
 )
 
 type ApiKey struct {
