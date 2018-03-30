@@ -7,15 +7,13 @@ import (
 	"github.com/9chain/nbcapid/config"
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/9chain/nbcapid/sdkclient"
+	"github.com/9chain/nbcapid/common"
 	log "github.com/cihub/seelog"
 	"sync"
 	"time"
 )
 
-type KV struct {
-	Key   []byte `json:"key"`
-	Value []byte `json:"value"`
-}
+type KV = common.KV
 
 type SourceBatchRecord struct {
 	Channel string `json:"channel"`
@@ -76,6 +74,8 @@ func EnqueueBatch(batch *SourceBatchRecord) bool {
 			records = left
 
 			sendToChannel(batch.Channel, slice)
+
+			log.Infof("left records %d", len(records))
 		}
 	}()
 	return true
@@ -89,6 +89,7 @@ func writeMessageCb(typ, jsid string, err error) {
 
 		if err != nil {
 			delete(flightRpcMap, jsid)
+			log.Errorf("writeMessage fail %s %s", jsid, err.Error())
 			return
 		}
 
@@ -105,6 +106,8 @@ func writeMessageCb(typ, jsid string, err error) {
 
 		if err != nil {
 			delete(flightRpcMap, jsid)
+			log.Errorf("writeMessage fail %s %s", jsid, err.Error())
+
 			return
 		}
 
@@ -115,6 +118,8 @@ func writeMessageCb(typ, jsid string, err error) {
 
 		if err != nil {
 			delete(flightRpcMap, jsid)
+			log.Errorf("writeMessage fail %s %s", jsid, err.Error())
+
 			return
 		}
 
@@ -339,7 +344,6 @@ func process() {
 			writeMessageCb(typ.(string), jsid.(string), err)
 
 			if err != nil {
-				log.Errorf("writeMessage fail %s", err.Error())
 				break
 			}
 

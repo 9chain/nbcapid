@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"os"
+	log "github.com/cihub/seelog"
 )
 
 type ApiKey struct {
@@ -44,11 +45,15 @@ func loadConfig(path string, cfg interface{}) error {
 
 func Init() {
 	if err := loadConfig("cfg/channels.toml", &channelCfg); err != nil {
+		log.Error("loadConfig channel fail")
+		log.Flush()
 		panic(err)
 	}
 
 	var userConfig UserConfig
 	if err := loadConfig("cfg/usercfg.toml", &userConfig); err != nil {
+		log.Error("loadConfig user fail")
+		log.Flush()
 		panic(err)
 	}
 

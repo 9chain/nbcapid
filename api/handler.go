@@ -7,6 +7,7 @@ import (
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/9chain/nbcapid/source"
 	"github.com/gin-gonic/gin"
+	log "github.com/cihub/seelog"
 )
 
 func init() {
@@ -14,7 +15,7 @@ func init() {
 	handlers["source-insert-batch"] = sourceInsertBatch
 	handlers["source-state"] = sourceState
 	handlers["source-transactions"] = sourceTransactions
-}
+	}
 
 /*
 {
@@ -42,11 +43,13 @@ func init() {
 func sourceInsertBatch(ctx *gin.Context, params interface{}) (interface{}, *JSONError) {
 	var p source.SourceBatchRecord
 	if err := MapToObject(params, &p); err != nil {
+		log.Warnf("invalid param %+v", params)
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
 
 	ak, _ := ctx.Get("apiKey")
 	if err := apikey.CheckChannel(ak.(string), p.Channel); err != nil {
+		log.Warnf("invalid channel %+v %+v", ak, p.Channel)
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
 
@@ -56,10 +59,12 @@ func sourceInsertBatch(ctx *gin.Context, params interface{}) (interface{}, *JSON
 	}
 
 	if total > 1000 {
+		log.Warnf("too many records in batch %d", total)
 		return nil, primitives.NewCustomInternalError("too many records")
 	}
 
 	if !source.EnqueueBatch(&p) {
+		log.Errorf("enqueue fail")
 		return nil, primitives.NewCustomInternalError("server busy")
 	}
 
@@ -80,20 +85,24 @@ func sourceState(ctx *gin.Context, params interface{}) (interface{}, *JSONError)
 	}
 
 	if err := MapToObject(params, &p); err != nil {
+		log.Warnf("invalid param %+v", params)
 		return nil, primitives.NewInvalidParamsError()
 	}
 
 	if len(p.Key) == 0 || len(p.Channel) == 0 {
+		log.Warnf("invalid param %+v", params)
 		return nil, primitives.NewInvalidParamsError()
 	}
 
 	ak, _ := ctx.Get("apiKey")
 	if err := apikey.CheckChannel(ak.(string), p.Channel); err != nil {
+		log.Warnf("invalid channel %+v %+v", ak, p.Channel)
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
 
 	res, err := source.QueryState(p.Channel, p.Key)
 	if err != nil {
+		log.Errorf("QueryState fail %s", err.Error())
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
 
@@ -102,6 +111,8 @@ func sourceState(ctx *gin.Context, params interface{}) (interface{}, *JSONError)
 	}
 
 	if err := MapToObject(res, &result); err != nil {
+		log.Errorf("Parse Result fail %s", err.Error())
+		log.Flush()
 		panic(err)
 	}
 
@@ -124,20 +135,24 @@ func sourceTransactions(ctx *gin.Context, params interface{}) (interface{}, *JSO
 	}
 
 	if err := MapToObject(params, &p); err != nil {
+		log.Warnf("invalid param %+v", params)
 		return nil, primitives.NewInvalidParamsError()
 	}
 
 	if len(p.Key) == 0 || len(p.Channel) == 0 {
+		log.Warnf("invalid param %+v", params)
 		return nil, primitives.NewInvalidParamsError()
 	}
 
 	ak, _ := ctx.Get("apiKey")
 	if err := apikey.CheckChannel(ak.(string), p.Channel); err != nil {
+		log.Warnf("invalid channel %+v %+v", ak, p.Channel)
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
 
 	res, err := source.QueryTransactions(p.Channel, p.Key)
 	if err != nil {
+		log.Errorf("QueryState fail %s", err.Error())
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
 
@@ -151,11 +166,14 @@ func sourceTransactions(ctx *gin.Context, params interface{}) (interface{}, *JSO
 	}
 
 	if err := MapToObject(res, &results); err != nil {
+		log.Errorf("Parse Result fail %s", err.Error())
+		log.Flush()
 		panic(err)
 	}
 
 	for i, r := range results {
 		if s, err := base64.StdEncoding.DecodeString(r.Value); err != nil {
+			log.Errorf("Base64 Decode fail %s", err.Error())
 			return nil, primitives.NewCustomInternalError(err.Error())
 		} else {
 			results[i].Value = string(s)

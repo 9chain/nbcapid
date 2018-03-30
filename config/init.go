@@ -110,7 +110,7 @@ func Init() {
 	}
 
 	printCfg(cfgFileName, &newCfg)
-	log.Warn("00000000000000000000")
+
 	o, n := toMap(cfg), toMap(newCfg)
 	walk(o, n)
 
