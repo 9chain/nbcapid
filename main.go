@@ -3,10 +3,10 @@ package main
 import (
 	"github.com/9chain/nbcapid/api"
 	"github.com/9chain/nbcapid/apikey"
-	"github.com/gin-gonic/gin"
-	"github.com/9chain/nbcapid/sdkclient"
 	"github.com/9chain/nbcapid/config"
+	"github.com/9chain/nbcapid/sdkclient"
 	"github.com/9chain/nbcapid/source"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {

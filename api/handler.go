@@ -1,11 +1,12 @@
 package api
 
 import (
+	"encoding/base64"
+	"fmt"
 	"github.com/9chain/nbcapid/apikey"
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/9chain/nbcapid/source"
 	"github.com/gin-gonic/gin"
-	"fmt"
 )
 
 func init() {
@@ -96,7 +97,18 @@ func sourceState(ctx *gin.Context, params interface{}) (interface{}, *JSONError)
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
 
-	return res, nil
+	var result struct {
+		State string `json:"state"`
+	}
+
+	if err := MapToObject(res, &result); err != nil {
+		panic(err)
+	}
+
+	bs, err := base64.StdEncoding.DecodeString(result.State)
+	result.State = string(bs)
+
+	return result, nil
 }
 
 /*
@@ -128,6 +140,40 @@ func sourceTransactions(ctx *gin.Context, params interface{}) (interface{}, *JSO
 	if err != nil {
 		return nil, primitives.NewCustomInternalError(err.Error())
 	}
+
+	var results []struct {
+		Timestamp struct {
+			Nanos   int32 `json:"nanos"`
+			Seconds int32 `json:"seconds"`
+		} `json:"timestamp"`
+		TxId  string `json:"tx_id"`
+		Value string `json:"value"`
+	}
+
+	if err := MapToObject(res, &results); err != nil {
+		panic(err)
+	}
+
+	for i, r := range results {
+		if s, err := base64.StdEncoding.DecodeString(r.Value); err != nil {
+			return nil, primitives.NewCustomInternalError(err.Error())
+		} else {
+			results[i].Value = string(s)
+		}
+	}
 	_ = fmt.Println
-	return res, nil
+	return results, nil
 }
+
+/*
+[
+    {
+      "timestamp": {
+        "nanos": 4000000,
+        "seconds": 1522393304
+      },
+      "tx_id": "26c952bb482534a2ed9ac337c74a9d7a22d9f121e5123b67fcd36ddf5dfd1edb",
+      "value": "ZDk2MTgyNDMyNGZiOThmN2IxYjJiOGU3Mjc4ZDk2MGYzNzEyZGY3ZDg0MTFmZDM2NTI3YTI5ZmI1ZTY0OTE0Yg=="
+    }
+]
+*/

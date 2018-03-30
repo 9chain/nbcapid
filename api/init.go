@@ -1,9 +1,9 @@
 package api
 
 import (
+	"github.com/9chain/nbcapid/apikey"
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/gin-gonic/gin"
-	"github.com/9chain/nbcapid/apikey"
 )
 
 type JSONError = primitives.JSONError
@@ -11,9 +11,10 @@ type JSON2Request = primitives.JSON2Request
 type JSON2Response = primitives.JSON2Response
 
 var (
-	handlers    = make(map[string]func(ctx *gin.Context, params interface{}) (interface{}, *JSONError))
+	handlers = make(map[string]func(ctx *gin.Context, params interface{}) (interface{}, *JSONError))
 	//notifyChans = userNotify{channels: make(map[string]chan interface{}), rwLock: sync.RWMutex{}}
 )
+
 /*
 type userNotify struct {
 	channels map[string]chan interface{}

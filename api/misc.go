@@ -2,9 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/9chain/nbcapid/primitives"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
-	"github.com/9chain/nbcapid/primitives"
 )
 
 // 解析json2rpc参数

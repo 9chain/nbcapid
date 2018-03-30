@@ -1,25 +1,25 @@
 package source
 
 import (
+	"errors"
 	"fmt"
+	"github.com/9chain/nbcapid/apikey"
 	"github.com/9chain/nbcapid/config"
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/9chain/nbcapid/sdkclient"
 	log "github.com/cihub/seelog"
 	"sync"
 	"time"
-	"github.com/9chain/nbcapid/apikey"
-	"errors"
 )
 
-type SourceRecord struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+type KV struct {
+	Key   []byte `json:"key"`
+	Value []byte `json:"value"`
 }
 
 type SourceBatchRecord struct {
-	Channel string         `json:"channel"`
-	Records []SourceRecord `json:"records"`
+	Channel string `json:"channel"`
+	Records []KV   `json:"records"`
 }
 
 var (
@@ -36,15 +36,16 @@ var (
 )
 
 func EnqueueBatch(batch *SourceBatchRecord) bool {
-	sendToChannel := func(userChannel string, records []SourceRecord) {
+	sendToChannel := func(userChannel string, records []KV) {
 		// map channel & key
 		realChannel, _ := apikey.MasterChannel(batch.Channel)
 		for i, _ := range records {
-			records[i].Key = fmt.Sprintf("%s_%s", userChannel, records[i].Key)
+			t := append([]byte(userChannel), byte('_'))
+			records[i].Key = append(t, records[i].Key...)
 		}
 
 		jsid, txid := nextJsID(), nextTxID()
-		batchRecord := SourceBatchRecord{Channel:realChannel, Records:records}
+		batchRecord := SourceBatchRecord{Channel: realChannel, Records: records}
 		p := struct {
 			Rid string `json:"rid"`
 			SourceBatchRecord
@@ -56,25 +57,25 @@ func EnqueueBatch(batch *SourceBatchRecord) bool {
 		defer flightMapLock.Unlock()
 		flightRpcMap[jsid] = map[string]interface{}{"type": "create", "rid": txid, "jsid": jsid, "batch_record": &batchRecord, "active": time.Now()}
 
-		queueChan <- map[string]interface{}{"bytes":bs, "jsid":jsid, "type":"create"}
+		queueChan <- map[string]interface{}{"bytes": bs, "jsid": jsid, "type": "create"}
 	}
 
 	go func() {
 		maxCount := config.Cfg.Source.MaxRecordsPerTx
 		records := batch.Records
 
-		var left []SourceRecord
-		var slice []SourceRecord
+		var left []KV
+		var slice []KV
 		for {
 			if len(records) <= maxCount {
-			sendToChannel(batch.Channel, records)
+				sendToChannel(batch.Channel, records)
 				break
 			}
 
 			slice, left = records[:maxCount], records[maxCount:]
 			records = left
 
-			sendToChannel(batch.Channel,slice)
+			sendToChannel(batch.Channel, slice)
 		}
 	}()
 	return true
@@ -127,16 +128,16 @@ func QueryTransactions(channel, key string) (interface{}, error) {
 
 	jsid := nextJsID()
 
-	p := map[string]string {"channel": realChannel, "key": realKey}
+	p := map[string]string{"channel": realChannel, "key": realKey}
 	req := primitives.NewJSON2Request("transactions", jsid, p)
 	bs, _ := req.JSONByte()
 
 	waitChan := make(chan interface{})
 	flightMapLock.Lock()
-	flightRpcMap[jsid] = map[string]interface{}{"wait_chan": waitChan, "jsid": jsid, "bytes": bs, "type":"state"}
+	flightRpcMap[jsid] = map[string]interface{}{"wait_chan": waitChan, "jsid": jsid, "bytes": bs, "type": "state"}
 	flightMapLock.Unlock()
 
-	queueChan <- map[string]interface{}{"bytes":bs, "jsid":jsid, "type":"state"}
+	queueChan <- map[string]interface{}{"bytes": bs, "jsid": jsid, "type": "state"}
 
 	res, ok := <-waitChan
 	close(waitChan)
@@ -167,16 +168,16 @@ func QueryState(channel, key string) (interface{}, error) {
 
 	jsid := nextJsID()
 
-	p := map[string]string {"channel": realChannel, "key": realKey}
+	p := map[string]string{"channel": realChannel, "key": realKey}
 	req := primitives.NewJSON2Request("state", jsid, p)
 	bs, _ := req.JSONByte()
 
 	waitChan := make(chan interface{})
 	flightMapLock.Lock()
-	flightRpcMap[jsid] = map[string]interface{}{"wait_chan": waitChan, "jsid": jsid, "bytes": bs, "type":"state"}
+	flightRpcMap[jsid] = map[string]interface{}{"wait_chan": waitChan, "jsid": jsid, "bytes": bs, "type": "state"}
 	flightMapLock.Unlock()
 
-	queueChan <- map[string]interface{}{"bytes":bs, "jsid":jsid, "type":"state"}
+	queueChan <- map[string]interface{}{"bytes": bs, "jsid": jsid, "type": "state"}
 
 	res, ok := <-waitChan
 	close(waitChan)
@@ -212,7 +213,7 @@ func handleWSResponse(r *primitives.JSON2Response) {
 	}
 
 	typ, ok := flight["type"].(string)
-	if  !ok {
+	if !ok {
 		panic("logical error")
 	}
 
@@ -336,8 +337,8 @@ func process() {
 
 			err := sdkclient.WriteMessage(bs.([]byte))
 			writeMessageCb(typ.(string), jsid.(string), err)
-			fmt.Println("Sfasfdas", err)
-			if  err != nil {
+
+			if err != nil {
 				log.Errorf("writeMessage fail %s", err.Error())
 				break
 			}

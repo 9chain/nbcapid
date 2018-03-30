@@ -1,16 +1,16 @@
 package apikey
 
 import (
-	"github.com/BurntSushi/toml"
-	"os"
 	"errors"
 	"fmt"
+	"github.com/BurntSushi/toml"
+	"os"
 )
 
 type ApiKey struct {
 	Username string
-	ApiKey string
-	Channel string
+	ApiKey   string
+	Channel  string
 }
 
 type UserConfig struct {
@@ -26,7 +26,7 @@ type ChannelConfig struct {
 }
 
 var (
-	apiKeyCfg = make(map[string]ApiKey)
+	apiKeyCfg  = make(map[string]ApiKey)
 	channelCfg ChannelConfig
 )
 
@@ -70,7 +70,7 @@ func CheckChannel(apiKey, channel string) error {
 		return errors.New("invalid channel")
 	}
 
-	// apiKey是否有权限　
+	// apiKey是否有权限
 	apiKeyInfo, ok := apiKeyCfg[apiKey]
 	if !ok {
 		return errors.New("invalid apiKey")

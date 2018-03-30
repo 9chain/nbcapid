@@ -52,7 +52,6 @@ func ParseJSON2Request(request []byte) (*JSON2Request, error) {
 	return j, nil
 }
 
-
 func ParseJSON2Response(response []byte) (*JSON2Response, error) {
 	r := new(JSON2Response)
 	err := json.Unmarshal([]byte(response), r)

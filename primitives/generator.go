@@ -1,8 +1,8 @@
 package primitives
 
 import (
-	"syscall"
 	"fmt"
+	"syscall"
 )
 
 func NewGenerator(prefix string) func() string {
@@ -18,4 +18,3 @@ func NewGenerator(prefix string) func() string {
 		return fmt.Sprintf("%s_%d_%d", prefix, uptime, counter)
 	}
 }
-

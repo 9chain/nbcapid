@@ -24,15 +24,14 @@ func Off(event string, listener interface{}) {
 	wsEmitter.Off(event, listener)
 }
 
-type SDKParams struct{
-	ID string
+type SDKParams struct {
+	ID     string
 	Method string
 	Params struct {
-		Chain string
+		Chain  string
 		Params interface{}
 	}
 }
-
 
 // metohd, chain, params
 func WriteMessage(bs []byte) error {
@@ -91,7 +90,6 @@ func start() {
 			fmt.Println("read error:", err)
 			return
 		}
-		fmt.Println(678, string(message))
 
 		wsEmitter.Emit("message", message)
 	}

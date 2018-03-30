@@ -5,19 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/BurntSushi/toml"
+	log "github.com/cihub/seelog"
 	"os"
 	"reflect"
-	log "github.com/cihub/seelog"
 )
 
 type Config struct {
 	SDKClient struct {
-		WSUrl string
-		ApiKey string
+		WSUrl              string
+		ApiKey             string
 		RetryConnectSecond int
 	}
 	Source struct {
-		MaxQueueCount int
+		MaxQueueCount   int
 		MaxRecordsPerTx int
 	}
 }
@@ -50,13 +50,11 @@ func printCfg(flag string, cfg *Config) {
 	log.Infof("\n==========%s================\n%s\n", flag, buf.String())
 }
 
-
 func mustCfg() {
 	if _, err := os.Stat("cfg"); err != nil {
 		panic("not found cfg dir")
 	}
 }
-
 
 func initSeelog() {
 	cfgPath := "cfg/seelog.xml"
