@@ -30,7 +30,7 @@ var (
 
 const defaultConfig = `
 [SDKClient]
-WSUrl = "ws://localhost:8080/v1/ws"
+WSUrl = "ws://localhost:8082/v1/ws"
 ApiKey = "test api key"
 RetryConnectSecond = 3
 [Source]

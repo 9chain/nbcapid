@@ -1,5 +1,5 @@
 [SDKClient]
-WSUrl = "ws://192.168.100.125:8082/v1/ws"   # sdksrvd监听地址
+WSUrl = "ws://localhost:8082/v1/ws"   # sdksrvd监听地址
 ApiKey = "1234567890"                       # 访问sdksrvd的ApiKey
 RetryConnectSecond = 3                      # 重试连接sdksrvd的时间间隔
 
