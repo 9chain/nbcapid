@@ -1,8 +1,8 @@
 [UserKeys]
-  [UserKeys.user111]
-    Username = "user111"
-    ApiKey = "key111"
-    Channel = "my_channel"
+  [UserKeys.user111]        # user111是用户名
+    Username = "user111"    # 用户名，和上面一样
+    ApiKey = "key111"       # 用户的ApiKey
+    Channel = "my_channel"  # 用户/ApiKey可以使用的channel
 
   [UserKeys.user222]
     Username = "user222"
