@@ -8,6 +8,7 @@ import (
 	log "github.com/cihub/seelog"
 	"os"
 	"reflect"
+	"path"
 )
 
 type Config struct {
@@ -24,10 +25,7 @@ type Config struct {
 
 var (
 	Cfg Config
-)
-
-const (
-	cfgFileName = "./cfg/nbcapid.toml"
+	cfgDir = "./cfg"
 )
 
 const defaultConfig = `
@@ -48,12 +46,6 @@ func printCfg(flag string, cfg *Config) {
 	}
 
 	log.Infof("\n==========%s================\n%s\n", flag, buf.String())
-}
-
-func mustCfg() {
-	if _, err := os.Stat("cfg"); err != nil {
-		panic("not found cfg dir")
-	}
 }
 
 func initSeelog() {
@@ -89,7 +81,15 @@ func initSeelog() {
 }
 
 func Init() {
-	mustCfg()
+	dir := os.Getenv("NBCAPID_CFG_DIR")
+	if len(dir) > 0 {
+		cfgDir = dir
+	}
+
+	if _, err := os.Stat(cfgDir); err != nil {
+		panic("not found cfg dir: " + cfgDir)
+	}
+
 	initSeelog()
 
 	defer printCfg("final", &Cfg)
@@ -100,16 +100,17 @@ func Init() {
 	}
 	//printCfg("default", &cfg)
 
-	if _, err := os.Stat(cfgFileName); err != nil {
+	cfgFilePath := path.Join(cfgDir, "nbcapid.toml")
+	if _, err := os.Stat(cfgFilePath); err != nil {
 		return
 	}
 
 	var newCfg Config
-	if _, err := toml.DecodeFile(cfgFileName, &newCfg); err != nil {
+	if _, err := toml.DecodeFile(cfgFilePath, &newCfg); err != nil {
 		panic(err)
 	}
 
-	printCfg(cfgFileName, &newCfg)
+	printCfg(cfgFilePath, &newCfg)
 
 	o, n := toMap(cfg), toMap(newCfg)
 	walk(o, n)

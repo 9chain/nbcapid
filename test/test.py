@@ -8,47 +8,44 @@ def create():
     params = {
         "channel":"my_channel",
         "records":[{
-            "key":"d961824324fb98f7b1b2b8e7278d960f1",
-            "value":"d961824324fb98f7b1b2b8e7278d960f3712df7d8411fd36527a29fb5e64914b"
+            "key":"d961824324fb98f7b1b2b8e7278d96001",
+            "value":"this is the text data"
         },{
-            "key":"d961824324fb98f7b1b2b8e7278d960f2",
-            "value":"d961824324fb98f7b1b2b8e7278d960f3712df7d8411fd36527a29fb5e64914b"
-        },{
-            "key":"d961824324fb98f7b1b2b8e7278d960f3",
-            "value":"d961824324fb98f7b1b2b8e7278d960f3712df7d8411fd36527a29fb5e64914b"
-        },{
-            "key":"d961824324fb98f7b1b2b8e7278d960f4",
-            "value":"d961824324fb98f7b1b2b8e7278d960f3712df7d8411fd36527a29fb5e64914b"
+            "key":"d961824324fb98f7b1b2b8e7278d96002",
+            "value":json.dumps({"time": time.time()})
         }]
     }
 
     jsondata = {"params": params, "jsonrpc": "2.0", "id": 0, "method": "source-insert-batch"}
     res = requests.post(url, json=jsondata, headers={'content-type': 'application/json', 'X-Api-Key':'key111'})
     s = res.content.decode()
+    print(json.dumps(jsondata))
     print(s)
 
 def query_transactions():
     url = "http://localhost:8088/api/v1"
     params = {
         "channel":"my_channel",
-        "key":"d961824324fb98f7b1b2b8e7278d960f3",
+        "key":"d961824324fb98f7b1b2b8e7278d96001",
     }
 
     jsondata = {"params": params, "jsonrpc": "2.0", "id": 0, "method": "source-transactions"}
     res = requests.post(url, json=jsondata, headers={'content-type': 'application/json', 'X-Api-Key':'key111'})
     s = res.content.decode()
+    print(json.dumps(jsondata))
     print(s)
 
 def query_state():
     url = "http://localhost:8088/api/v1"
     params = {
         "channel": "my_channel",
-        "key": "d961824324fb98f7b1b2b8e7278d960f3",
+        "key": "d961824324fb98f7b1b2b8e7278d96001",
     }
 
     jsondata = {"params": params, "jsonrpc": "2.0", "id": 0, "method": "source-state"}
     res = requests.post(url, json=jsondata, headers={'content-type': 'application/json', 'X-Api-Key': 'key111'})
     s = res.content.decode()
+    print(json.dumps(jsondata))
     print(s)
 
 def sdk_create():
@@ -107,7 +104,7 @@ def sdk_state():
 # my_channel_d961824324fb98f7b1b2b8e7278d960f3
 if __name__ == "__main__":
     try:
-        create()
+        # create()
         query_transactions()
         query_state()
 
