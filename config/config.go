@@ -7,8 +7,8 @@ import (
 	"github.com/BurntSushi/toml"
 	log "github.com/cihub/seelog"
 	"os"
-	"reflect"
 	"path"
+	"reflect"
 )
 
 type Config struct {
@@ -24,7 +24,7 @@ type Config struct {
 }
 
 var (
-	Cfg Config
+	Cfg    Config
 	cfgDir = "./cfg"
 )
 

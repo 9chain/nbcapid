@@ -60,6 +60,8 @@ func Init() {
 	for _, r := range userConfig.UserKeys {
 		apiKeyCfg[r.ApiKey] = r
 	}
+
+	fmt.Println("===== apiKeyCfg", apiKeyCfg)
 }
 
 func CheckApiKey(apiKey string) bool {

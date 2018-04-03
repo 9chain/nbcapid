@@ -8,6 +8,7 @@ import (
 	"github.com/9chain/nbcapid/config"
 	"github.com/9chain/nbcapid/primitives"
 	"github.com/9chain/nbcapid/sdkclient"
+	"github.com/chuckpreslar/emission"
 	log "github.com/cihub/seelog"
 	"sync"
 	"time"
@@ -26,14 +27,15 @@ var (
 	queueChan     chan map[string]interface{}
 
 	nextJsID func() string
-	nextTxID func() string
 
 	flightRpcMap  = make(map[string]map[string]interface{})
 	flightTxMap   = make(map[string]map[string]interface{})
 	flightMapLock sync.Mutex
+
+	SourceEmitter = emission.NewEmitter()
 )
 
-func EnqueueBatch(batch *SourceBatchRecord) bool {
+func EnqueueBatch(batch *SourceBatchRecord, rid string) bool {
 	sendToChannel := func(userChannel string, records []KV) {
 		// map channel & key
 		realChannel, _ := apikey.MasterChannel(batch.Channel)
@@ -41,7 +43,7 @@ func EnqueueBatch(batch *SourceBatchRecord) bool {
 			records[i].Key = fmt.Sprintf("%s_%s", userChannel, records[i].Key)
 		}
 
-		jsid, txid := nextJsID(), nextTxID()
+		jsid, txid := nextJsID(), rid
 		batchRecord := SourceBatchRecord{Channel: realChannel, Records: records}
 		p := struct {
 			Rid string `json:"rid"`
@@ -99,7 +101,7 @@ func writeMessageCb(typ, jsid string, err error) {
 		flightTxMap[rid.(string)] = map[string]interface{}{"type": "create", "rid": rid, "batch_record": batchRecord, "active": time.Now()}
 
 		return
-	case "transactions":
+	case "transactions", "queryTransaction":
 		flightMapLock.Lock()
 		defer flightMapLock.Unlock()
 
@@ -138,32 +140,79 @@ func QueryTransactions(channel, key string) (interface{}, error) {
 
 	waitChan := make(chan interface{})
 	flightMapLock.Lock()
-	flightRpcMap[jsid] = map[string]interface{}{"wait_chan": waitChan, "jsid": jsid, "bytes": bs, "type": "state"}
+	flightRpcMap[jsid] = map[string]interface{}{"wait_chan": waitChan, "jsid": jsid, "bytes": bs, "type": "transactions"}
 	flightMapLock.Unlock()
 
-	queueChan <- map[string]interface{}{"bytes": bs, "jsid": jsid, "type": "state"}
+	queueChan <- map[string]interface{}{"bytes": bs, "jsid": jsid, "type": "transactions"}
 
-	res, ok := <-waitChan
+	var res *primitives.JSON2Response
+	select {
+	case r := <-waitChan:
+		res = r.(*primitives.JSON2Response)
+		break
+	case <-time.After(time.Second * 10):
+		fmt.Println("===== timeout")
+		break
+	}
+
 	close(waitChan)
 
 	flightMapLock.Lock()
 	delete(flightRpcMap, jsid)
 	flightMapLock.Unlock()
 
-	if !ok {
-		fmt.Println("wait chan error", res, ok)
-		return nil, errors.New("query transactions fail")
+	if res == nil {
+		return nil, errors.New("timeout")
 	}
 
-	j, ok := res.(*primitives.JSON2Response)
-	if !ok {
-		panic("xxx")
-	}
-	if j.Error != nil {
-		return nil, j.Error
+	if res.Error != nil {
+		return nil, res.Error
 	}
 
-	return j.Result, nil
+	return res.Result, nil
+}
+
+func QueryTransaction(channel, txId string) (interface{}, error) {
+	realChannel, _ := apikey.MasterChannel(channel)
+
+	jsid := nextJsID()
+
+	p := map[string]string{"channel": realChannel, "tx_id": txId}
+	req := primitives.NewJSON2Request("queryTransaction", jsid, p)
+	bs, _ := req.JSONByte()
+
+	waitChan := make(chan interface{})
+	flightMapLock.Lock()
+	flightRpcMap[jsid] = map[string]interface{}{"wait_chan": waitChan, "jsid": jsid, "bytes": bs, "type": "queryTransaction"}
+	flightMapLock.Unlock()
+
+	queueChan <- map[string]interface{}{"bytes": bs, "jsid": jsid, "type": "queryTransaction"}
+
+	var res *primitives.JSON2Response
+	select {
+	case r := <-waitChan:
+		res = r.(*primitives.JSON2Response)
+		break
+	case <-time.After(time.Second * 10):
+		fmt.Println("===== timeout")
+		break
+	}
+
+	close(waitChan)
+
+	flightMapLock.Lock()
+	delete(flightRpcMap, jsid)
+	flightMapLock.Unlock()
+
+	if res == nil {
+		return nil, primitives.NewCustomInternalError("timeout")
+	}
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return res.Result, nil
 }
 
 func QueryState(channel, key string) (interface{}, error) {
@@ -183,27 +232,31 @@ func QueryState(channel, key string) (interface{}, error) {
 
 	queueChan <- map[string]interface{}{"bytes": bs, "jsid": jsid, "type": "state"}
 
-	res, ok := <-waitChan
+	var res *primitives.JSON2Response
+	select {
+	case r := <-waitChan:
+		res = r.(*primitives.JSON2Response)
+		break
+	case <-time.After(time.Second * 10):
+		fmt.Println("===== timeout")
+		break
+	}
+
 	close(waitChan)
 
 	flightMapLock.Lock()
 	delete(flightRpcMap, jsid)
 	flightMapLock.Unlock()
 
-	if !ok {
-		fmt.Println("wait chan error", res, ok)
-		return nil, errors.New("query transactions fail")
+	if nil == res {
+		return nil, errors.New("timeout")
 	}
 
-	j, ok := res.(*primitives.JSON2Response)
-	if !ok {
-		panic("xxx")
-	}
-	if j.Error != nil {
-		return nil, j.Error
+	if res.Error != nil {
+		return nil, res.Error
 	}
 
-	return j.Result, nil
+	return res.Result, nil
 }
 
 func handleWSResponse(r *primitives.JSON2Response) {
@@ -224,13 +277,14 @@ func handleWSResponse(r *primitives.JSON2Response) {
 	delete(flightRpcMap, id)
 
 	switch typ {
-	case "transactions":
+	case "transactions", "state", "queryTransaction":
 		waitChan, ok := flight["wait_chan"].(chan interface{})
 		if !ok {
 			panic("logical error")
 		}
 		waitChan <- r
 		break
+
 	case "create":
 		rid, _ := flight["rid"].(string)
 		_, ok = flightTxMap[rid]
@@ -241,13 +295,8 @@ func handleWSResponse(r *primitives.JSON2Response) {
 
 		delete(flightRpcMap, rid)
 		log.Debugf("create rid %s ok", rid)
-		break
-	case "state":
-		waitChan, ok := flight["wait_chan"].(chan interface{})
-		if !ok {
-			panic("logical error")
-		}
-		waitChan <- r
+
+		SourceEmitter.Emit("create", rid, r)
 		break
 	default:
 		panic("no such type " + typ)
@@ -258,7 +307,6 @@ func Init() {
 	maxQueueCount = config.Cfg.Source.MaxQueueCount
 	queueChan = make(chan map[string]interface{}, maxQueueCount)
 
-	nextTxID = primitives.NewGenerator("tx")
 	nextJsID = primitives.NewGenerator("rpc")
 
 	sdkclient.On("connect", func() {
@@ -314,7 +362,6 @@ func process() {
 	tick := time.NewTicker(1 * time.Second)
 	defer tick.Stop()
 
-	nextTxID = primitives.NewGenerator("tx")
 	nextJsID = primitives.NewGenerator("rpc")
 
 	for wsReady {

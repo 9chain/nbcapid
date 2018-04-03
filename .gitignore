@@ -6,3 +6,5 @@ config.toml
 test.db
 log
 test/.idea/
+test/
+cfg/

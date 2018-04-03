@@ -17,7 +17,7 @@ var (
 
 func Init(r *gin.RouterGroup) {
 	// 标准json2rpc处理
-	r.POST("v1", func(ctx *gin.Context) {
+	r.POST("v2", func(ctx *gin.Context) {
 		j, err := parseJSON2Request(ctx)
 		if err != nil {
 			handleV1Error(ctx, nil, primitives.NewInvalidRequestError())

@@ -1,10 +1,5 @@
 [UserKeys]
-  [UserKeys.user111]        # user111是用户名
-    Username = "user111"    # 用户名，和上面一样
-    ApiKey = "key111"       # 用户的ApiKey
-    Channel = "my_channel"  # 用户/ApiKey可以使用的channel
-
-  [UserKeys.user222]
-    Username = "user222"
-    ApiKey = "key222"
-    Channel = "channel_222"
+  [UserKeys.skynovo]        # user111是用户名
+    Username = "skynovo"    # 用户名，和上面一样
+    ApiKey = "1957394652937f2fa9b10c92cba464acd98c61f0249e82046d170c767c1161d6"       # 用户的ApiKey. echo -n skynovo | sha256sum
+    Channel = "skynovo"  # 用户/ApiKey可以使用的channel
