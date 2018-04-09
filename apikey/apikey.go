@@ -70,6 +70,14 @@ func CheckApiKey(apiKey string) bool {
 	return ok
 }
 
+func GetSecretKey(apiKey string) (string, bool) {
+	r, ok := apiKeyCfg[apiKey]
+	if ok {
+		return r.SecretKey, true
+	}
+	return "", false
+}
+
 func CheckChannel(apiKey, channel string) error {
 	// channel是否存在
 	_, ok := channelCfg.Channels[channel]

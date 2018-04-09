@@ -86,11 +86,15 @@ func Init() {
 		cfgDir = dir
 	}
 
+	fmt.Println("cfgDir is", cfgDir)
+
 	if _, err := os.Stat(cfgDir); err != nil {
 		panic("not found cfg dir: " + cfgDir)
 	}
 
 	initSeelog()
+
+	log.Infof("cfg dir is %s", cfgDir)
 
 	defer printCfg("final", &Cfg)
 

@@ -237,7 +237,7 @@ func QueryState(channel, key string) (interface{}, error) {
 	case r := <-waitChan:
 		res = r.(*primitives.JSON2Response)
 		break
-	case <-time.After(time.Second * 10):
+	case <-time.After(time.Second * 3):
 		fmt.Println("===== timeout")
 		break
 	}
