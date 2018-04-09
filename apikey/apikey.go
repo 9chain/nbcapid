@@ -10,8 +10,9 @@ import (
 
 type ApiKey struct {
 	Username string
-	ApiKey   string
 	Channel  string
+	ApiKey   string
+	SecretKey   string
 }
 
 type UserConfig struct {
