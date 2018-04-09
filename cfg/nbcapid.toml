@@ -1,8 +1,0 @@
-[SDKClient]
-WSUrl = "ws://192.168.100.125:9090/v1/ws"   # sdksrvd监听地址
-ApiKey = "1234567891"                       # 访问sdksrvd的ApiKey
-RetryConnectSecond = 3                      # 重试连接sdksrvd的时间间隔
-
-[Source]
-MaxQueueCount = 1000        # 未提交到sdksrvd的缓存队列最大长度　
-MaxRecordsPerTx = 100       # 每笔交易中的记录的最大值

@@ -1,10 +1,6 @@
-vendor
-nbcsrvd01
-glide.lock
-userconfig
-config.toml
-test.db
 log
-test/.idea/
-test/
-cfg/
+vendor
+log
+cfg
+glide.lock
+test
